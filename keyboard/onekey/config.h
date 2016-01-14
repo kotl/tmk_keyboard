@@ -24,12 +24,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID      0x1111
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    geekhack
-#define PRODUCT         Onekey
+#define PRODUCT         kotl
 #define DESCRIPTION     t.m.k. keyboard firmware for Onekey
 
 /* key matrix size */
-#define MATRIX_ROWS 1
-#define MATRIX_COLS 1
+#define MATRIX_ROWS 5
+#define MATRIX_COLS 8
+
+// Cols: PF7 PB6 PB5 PB4 PD7 PB0 PB1 PB2
+
+// Rows: PF0 PF1 PF4 PF5 PF6
+
 
 /* define if matrix has ghost */
 //#define MATRIX_HAS_GHOST
