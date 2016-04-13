@@ -23,7 +23,7 @@
 [{y:-0.5,x:4},"Home\n\n\n\n\n\n\n9/4",{x:1},"End\n\n\n\n\n\n\n9/1",{x:8},"Left\nFn4,LCtl,PgUp\n\n\n\n\n\n4/6",{x:1},"Right\nFn3,LCtl,PgDown\n\n\n\n\n\n4/1"],
 [{y:-0.625,x:2.5},"LGUI\n\n\n\n\n\n\n9/7",{x:15},"Del\nFn7,LCtl,W\n\n\n\n\n\n4/4"],
 [{y:-0.875,x:5},"PgDn\n\n\n\n\n\n\n9/3",{x:10},"Down\nVOLD\n\n\n\n\n\n4/0"],
-[{r:60,rx:14.5,ry:4.25,y:2,x:0.25,w:1.5},"Menu\n\n\n\n\n\n\n3/5"],
+[{r:60,rx:14.5,ry:4.25,y:2,x:0.25,w:1.5},"Application\n\n\n\n\n\n\n3/5"],
 [{x:0.25,w:1.5},"Fn0,MOM(2)\n\n\n\n\n\n\n1/5"],
 [{r:-60,rx:7.5,y:2,x:-1.75,w:1.5},"Spc\n\n\n\n\n\n\n8/0"],
 [{x:-1.75,w:1.5},"Fn1,MOM(2)\n\n\n\n\n\n\n7/0"]
