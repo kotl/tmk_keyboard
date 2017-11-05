@@ -32,177 +32,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "keymap.h"
 #include "ergodox.h"
 
-
-/* ErgoDox keymap definition macro */
-#define KEYMAP(                                                 \
-                                                                \
-    /* left hand, spatial positions */                          \
-    k00,k01,k02,k03,k04,k05,k06,                                \
-    k10,k11,k12,k13,k14,k15,k16,                                \
-    k20,k21,k22,k23,k24,k25,                                    \
-    k30,k31,k32,k33,k34,k35,k36,                                \
-    k40,k41,k42,k43,k44,                                        \
-                            k55,k56,                            \
-                                k54,                            \
-                        k53,k52,k51,                            \
-                                                                \
-    /* right hand, spatial positions */                         \
-        k07,k08,k09,k0A,k0B,k0C,k0D,                            \
-        k17,k18,k19,k1A,k1B,k1C,k1D,                            \
-            k28,k29,k2A,k2B,k2C,k2D,                            \
-        k37,k38,k39,k3A,k3B,k3C,k3D,                            \
-                k49,k4A,k4B,k4C,k4D,                            \
-    k57,k58,                                                    \
-    k59,                                                        \
-    k5C,k5B,k5A )                                               \
-                                                                \
-   /* matrix positions */                                       \
-   {                                                            \
-    { KC_##k00,KC_##k10,KC_##k20,KC_##k30,KC_##k40,KC_NO   },   \
-    { KC_##k01,KC_##k11,KC_##k21,KC_##k31,KC_##k41,KC_##k51},   \
-    { KC_##k02,KC_##k12,KC_##k22,KC_##k32,KC_##k42,KC_##k52},   \
-    { KC_##k03,KC_##k13,KC_##k23,KC_##k33,KC_##k43,KC_##k53},   \
-    { KC_##k04,KC_##k14,KC_##k24,KC_##k34,KC_##k44,KC_##k54},   \
-    { KC_##k05,KC_##k15,KC_##k25,KC_##k35,KC_NO,   KC_##k55},   \
-    { KC_##k06,KC_##k16,KC_NO,   KC_##k36,KC_NO,   KC_##k56},   \
-                                                                \
-    { KC_##k07,KC_##k17,KC_NO,   KC_##k37,KC_NO,   KC_##k57},   \
-    { KC_##k08,KC_##k18,KC_##k28,KC_##k38,KC_NO,   KC_##k58},   \
-    { KC_##k09,KC_##k19,KC_##k29,KC_##k39,KC_##k49,KC_##k59},   \
-    { KC_##k0A,KC_##k1A,KC_##k2A,KC_##k3A,KC_##k4A,KC_##k5A},   \
-    { KC_##k0B,KC_##k1B,KC_##k2B,KC_##k3B,KC_##k4B,KC_##k5B},   \
-    { KC_##k0C,KC_##k1C,KC_##k2C,KC_##k3C,KC_##k4C,KC_##k5C},   \
-    { KC_##k0D,KC_##k1D,KC_##k2D,KC_##k3D,KC_##k4D,KC_NO   }    \
-   }
-
-#if defined(KEYMAP_DVORAK)
-#include "keymap_dvorak.h"
-#elif defined(KEYMAP_COLEMAK)
-#include "keymap_colemak.h"
-#elif defined(KEYMAP_WORKMAN)
-#include "keymap_workman.h"
-#elif defined(KEYMAP_MICRO)
-#include "keymap_micro.h"
-#elif defined(KEYMAP_CUB)
-#include "keymap_cub.h"
-#else
-
 static const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    KEYMAP(  // layer 0 : default
-        // left hand
-        EQL, 1,   2,   3,   4,   5,   ESC,
-        BSLS,Q,   W,   E,   R,   T,   FN2,
-        TAB, A,   S,   D,   F,   G,
-        LSFT,Z,   X,   C,   V,   B,   FN1,
-        LGUI,GRV, BSLS,LEFT,RGHT,
-                                      LCTL,LALT,
-                                           HOME,
-                                 BSPC,DEL, END,
-        // right hand
-             FN3, 6,   7,   8,   9,   0,   MINS,
-             LBRC,Y,   U,   I,   O,   P,   RBRC,
-                  H,   J,   K,   L,   SCLN,QUOT,
-             FN1, N,   M,   COMM,DOT, SLSH,RSFT,
-                       LEFT,DOWN,UP,  RGHT,RGUI,
-        RALT,RCTL,
-        PGUP,
-        PGDN,ENT, SPC
-    ),
-
-    KEYMAP(  // layer 1 : function and symbol keys
-        // left hand
-        TRNS,F1,  F2,  F3,  F4,  F5,  F11,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,FN4,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,
-                                      TRNS,TRNS,
-                                           TRNS,
-                                 TRNS,TRNS,TRNS,
-        // right hand
-             F12, F6,  F7,  F8,  F9,  F10, TRNS,
-             TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-                  TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-             TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-                       TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,
-        TRNS,
-        TRNS,TRNS,TRNS
-    ),
-
-    KEYMAP(  // layer 2 : keyboard functions
-        // left hand
-        FN0, TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,
-                                      TRNS,TRNS,
-                                           TRNS,
-                                 TRNS,TRNS,TRNS,
-        // right hand
-             FN4, TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-             TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-                  TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-             TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-                       TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,
-        TRNS,
-        TRNS,TRNS,TRNS
-    ),
-
-    KEYMAP(  // layer 3: numpad
-        // left hand
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,
-        TRNS,TRNS,TRNS,TRNS,TRNS,
-                                      TRNS,TRNS,
-                                           TRNS,
-                                 TRNS,TRNS,TRNS,
-        // right hand
-             TRNS,NLCK,PSLS,PAST,PAST,PMNS,BSPC,
-             TRNS,NO,  P7,  P8,  P9,  PMNS,BSPC,
-                  NO,  P4,  P5,  P6,  PPLS,PENT,
-             TRNS,NO,  P1,  P2,  P3,  PPLS,PENT,
-                       P0,  PDOT,SLSH,PENT,PENT,
-        TRNS,TRNS,
-        TRNS,
-        TRNS,TRNS,TRNS
-    ),
-
+[0] = { \
+{ KC_9,KC_0,KC_MINS,KC_EQL,KC_BSPC,KC_6,KC_7,KC_8},  \
+{ KC_O,KC_P,KC_LBRC,KC_RBRC,KC_BSLS,KC_FN0,KC_U,KC_I},  \
+{ KC_L,KC_SCLN,KC_QUOT,KC_ENT,KC_NO,KC_H,KC_J,KC_K},  \
+{ KC_COMM,KC_DOT,KC_SLSH,KC_RSFT,KC_NO,KC_MENU,KC_N,KC_M},  \
+{ KC_DOWN,KC_RIGHT,KC_INS,KC_RCTL,KC_DEL,KC_NO,KC_LEFT,KC_UP},  \
+{ KC_5,KC_4,KC_3,KC_2,KC_1,KC_GRV,KC_FN2,KC_ESC},  \
+{ KC_Y,KC_T,KC_R,KC_E,KC_W,KC_Q,KC_TAB,KC_NO},  \
+{ KC_FN1,KC_G,KC_F,KC_D,KC_S,KC_A,ACTION_MODS_KEY(MOD_LALT, KC_LSFT),KC_NO},  \
+{ KC_SPC,KC_B,KC_V,KC_C,KC_X,KC_Z,KC_LSFT,KC_NO},  \
+{ KC_NO,KC_END,KC_PGUP,KC_PGDN,KC_HOME,KC_LALT,KC_LCTL,KC_LGUI}  \
+},  
+[1] = { \
+{ KC_F9,KC_F10,KC_TRNS,KC_TRNS,KC_PSCR,KC_F6,KC_F7,KC_F8},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,ACTION_LAYER_MOMENTARY(2),KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_VOLD,ACTION_MODS_KEY(MOD_LCTL, KC_PGDOWN),ACTION_MODS_KEY(MOD_LCTL, KC_T),KC_TRNS,ACTION_MODS_KEY(MOD_LCTL, KC_W),KC_NO,ACTION_MODS_KEY(MOD_LCTL, KC_PGUP),KC_VOLU},  \
+{ KC_F5,KC_F4,KC_F3,KC_F2,KC_F1,KC_TRNS,ACTION_LAYER_TOGGLE(1),KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ ACTION_LAYER_MOMENTARY(2),KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ KC_NO,ACTION_MODS_KEY(MOD_LALT|MOD_LSFT, KC_TAB),KC_TRNS,ACTION_MODS_KEY(MOD_LALT, KC_F4),ACTION_MODS_KEY(MOD_LALT, KC_TAB),KC_TRNS,KC_TRNS,KC_TRNS}  \
+},  
+[2] = { \
+{ KC_F9,KC_F10,KC_TRNS,KC_TRNS,KC_TRNS,KC_F6,KC_F7,KC_F8},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO,KC_TRNS,KC_TRNS},  \
+{ KC_F5,KC_F4,KC_F3,KC_F2,KC_F1,KC_TRNS,KC_TRNS,KC_TRNS},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_NO},  \
+{ KC_NO,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS}  \
+},  
 };
-
-/* id for user defined functions */
-enum function_id {
-    TEENSY_KEY,
-};
-
-/*
- * Fn action definition
- */
 static const uint16_t PROGMEM fn_actions[] = {
-    ACTION_FUNCTION(TEENSY_KEY),                    // FN0 - Teensy key
-    ACTION_LAYER_MOMENTARY(1),                      // FN1 - switch to Layer1
-    ACTION_LAYER_SET(2, ON_PRESS),                  // FN2 - set Layer2
-    ACTION_LAYER_TOGGLE(3),                         // FN3 - toggle Layer3 aka Numpad layer
-    ACTION_LAYER_SET(0, ON_PRESS),                  // FN4 - set Layer0
 };
-
-void action_function(keyrecord_t *event, uint8_t id, uint8_t opt)
-{
-    if (id == TEENSY_KEY) {
-        clear_keyboard();
-        print("\n\nJump to bootloader... ");
-        _delay_ms(250);
-        bootloader_jump(); // should not return
-        print("not supported.\n");
-    }
-}
-
-#endif
-
 
 #define KEYMAPS_SIZE    (sizeof(keymaps) / sizeof(keymaps[0]))
 #define FN_ACTIONS_SIZE (sizeof(fn_actions) / sizeof(fn_actions[0]))

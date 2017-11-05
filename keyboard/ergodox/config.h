@@ -29,17 +29,13 @@ Project located at <https://github.com/benblazak/ergodox-firmware>
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x1307
 #define DEVICE_VER      0x0001
-#define MANUFACTURER    TMK/Cub
-#define PRODUCT         Ergodox
-#define DESCRIPTION     t.m.k. keyboard firmware for Ergodox
+#define MANUFACTURER    kotl
+#define PRODUCT         kotlKeys
+#define DESCRIPTION     t.m.k. keyboard firmware for kotl
 
-#define MATRIX_ROWS 14
-#define MATRIX_COLS 6
+#define MATRIX_ROWS 10
+#define MATRIX_COLS 8
 
-#define MOUSEKEY_DELAY          100
-#define MOUSEKEY_INTERVAL       20
-#define MOUSEKEY_MAX_SPEED      3
-#define MOUSEKEY_TIME_TO_MAX    10
 
 /* define if matrix has ghost */
 //#define MATRIX_HAS_GHOST
@@ -56,12 +52,12 @@ Project located at <https://github.com/benblazak/ergodox-firmware>
  * And so, there is no sense to have DEBOUNCE higher than 2.
  */
 #define DEBOUNCE        2
-#define TAPPING_TERM    230
+// #define TAPPING_TERM    230
 
 /* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
-#define LOCKING_SUPPORT_ENABLE
+// #define LOCKING_SUPPORT_ENABLE
 /* Locking resynchronize hack */
-#define LOCKING_RESYNC_ENABLE
+// #define LOCKING_RESYNC_ENABLE
 
 /* key combination for command */
 #define IS_COMMAND() ( \
@@ -77,17 +73,44 @@ Project located at <https://github.com/benblazak/ergodox-firmware>
  */
 
 /* disable debug print */
-//#define NO_DEBUG
+// #define NO_DEBUG
 
 /* disable print */
-//#define NO_PRINT
+// #define NO_PRINT
 
 /* disable action features */
 //#define NO_ACTION_LAYER
-//#define NO_ACTION_TAPPING
-//#define NO_ACTION_ONESHOT
-//#define NO_ACTION_MACRO
-//#define NO_ACTION_FUNCTION
-//#define DEBUG_MATRIX_SCAN_RATE
+#define NO_ACTION_TAPPING
+#define NO_ACTION_ONESHOT
+#define NO_ACTION_MACRO
+#define NO_ACTION_FUNCTION
+#define DEBUG_MATRIX_SCAN_RATE
+
+/*
+ * Serial(USART) configuration
+ */
+
+#ifdef SERIAL_UART_RTS_LO
+  #undef SERIAL_UART_RTS_LO
+  #undef SERIAL_UART_RTS_HI
+#endif
+
+#ifdef __AVR_ATmega32U4__
+    #define SERIAL_UART_BAUD       ((57600  >> 1)-1)
+    #define SERIAL_UART_DATA       UDR1
+    #define SERIAL_UART_UBRR       ((F_CPU/(16UL*SERIAL_UART_BAUD))-1)
+    #define SERIAL_UART_RXD_VECT   USART1_RX_vect
+    #define SERIAL_UART_TXD_READY  (UCSR1A&(1<<UDRE1))
+    #define SERIAL_UART_INIT()     do { \
+	UBRR1 = SERIAL_UART_UBRR; \
+	UCSR1A = 0; \
+	UCSR1B = (1<<RXEN1) | (0<<TXCIE1) | (0<<TXEN1) | (1<<RXCIE1); /* added from teensy */ \
+        UCSR1C |= 0x6; /* constant 0x06 from teensy */ \
+        sei(); \
+    } while(0)
+#else
+    #error "USART configuration is needed."
+#endif
+
 
 #endif

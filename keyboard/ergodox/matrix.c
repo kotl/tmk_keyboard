@@ -28,13 +28,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "util.h"
 #include "matrix.h"
 #include "ergodox.h"
-#include "i2cmaster.h"
+#include "protocol/serial.h"
+
 #ifdef DEBUG_MATRIX_SCAN_RATE
 #include  "timer.h"
 #endif
 
 #ifndef DEBOUNCE
-#   define DEBOUNCE	5
+#   define DEBOUNCE 2
 #endif
 static uint8_t debouncing = DEBOUNCE;
 
@@ -46,8 +47,6 @@ static matrix_row_t read_cols(uint8_t row);
 static void init_cols(void);
 static void unselect_rows();
 static void select_row(uint8_t row);
-
-static uint8_t mcp23018_reset_loop;
 
 #ifdef DEBUG_MATRIX_SCAN_RATE
 uint32_t matrix_timer;
@@ -70,8 +69,6 @@ void matrix_init(void)
 {
     // initialize row and col
     init_ergodox();
-    mcp23018_status = init_mcp23018();
-    ergodox_blink_all_leds();
     unselect_rows();
     init_cols();
 
@@ -85,26 +82,15 @@ void matrix_init(void)
     matrix_timer = timer_read32();
     matrix_scan_count = 0;
 #endif
+
+    serial_init();
 }
+
+uint8_t temp_matrix[MATRIX_ROWS/2][MATRIX_COLS];
 
 uint8_t matrix_scan(void)
 {
-    if (mcp23018_status) { // if there was an error
-        if (++mcp23018_reset_loop == 0) {
-            // since mcp23018_reset_loop is 8 bit - we'll try to reset once in 255 matrix scans
-            // this will be approx bit more frequent than once per second
-            print("trying to reset mcp23018\n");
-            mcp23018_status = init_mcp23018();
-            if (mcp23018_status) {
-                print("left side not responding\n");
-            } else {
-                print("left side attached\n");
-                ergodox_blink_all_leds();
-            }
-        }
-    }
-
-#ifdef DEBUG_MATRIX_SCAN_RATE
+  #ifdef DEBUG_MATRIX_SCAN_RATE
     matrix_scan_count++;
 
     uint32_t timer_now = timer_read32();
@@ -116,59 +102,40 @@ uint8_t matrix_scan(void)
         matrix_timer = timer_now;
         matrix_scan_count = 0;
     }
-#endif
+  #endif
 
-#ifdef KEYMAP_CUB
-    uint8_t layer = biton32(layer_state);
 
-    ergodox_board_led_off();
-    ergodox_left_led_1_off();
-    ergodox_left_led_2_off();
-    ergodox_left_led_3_off();
-    switch (layer) {
-        case 1:
-            // all
-            ergodox_left_led_1_on();
-            ergodox_left_led_2_on();
-            ergodox_left_led_3_on();
-            break;
-        case 2:
-            // blue
-            ergodox_left_led_2_on();
-            break;
-        case 8:
-            // blue and green
-            ergodox_left_led_2_on();
-            // break missed intentionally
-        case 3:
-            // green
-            ergodox_left_led_3_on();
-            break;
-        case 6:
-            ergodox_board_led_on();
-            // break missed intentionally
-        case 4:
-        case 5:
-        case 7:
-            // white
-            ergodox_left_led_1_on();
-            break;
-        case 9:
-            // white+green
-            ergodox_left_led_1_on();
-            ergodox_left_led_3_on();
-            break;
-        default:
-            // none
-            break;
+  memset(temp_matrix, 0, sizeof(matrix));
+/*  for(uint8_t i=0;i<MATRIX_COLS; i++) {
+    int16_t tmp = 0;
+    for(uint8_t attempt = 0; attempt<350; attempt++) {
+      tmp = serial_recv2();
+      _delay_us(1);
+      if(tmp>0) break;
     }
-
-    mcp23018_status = ergodox_left_leds_update();
-#endif
-
+    if (tmp>0) {
+      tmp = ~tmp & 0xFF;
+      uint8_t col = tmp >> 5;
+      uint8_t rows = tmp & 0b11111;
+      for (int16_t j=MATRIX_ROWS/2-1;j>=0; j-- ) {
+        temp_matrix[j][col] = (rows & 1);
+        rows = rows >> 1;
+      }
+    }
+  }
+                */
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        select_row(i);
-        matrix_row_t cols = read_cols(i);
+        matrix_row_t cols = 0;
+	if (i<MATRIX_ROWS/2) {
+          select_row(i);
+          _delay_us(30);  // without this wait read unstable value.
+          cols = read_cols(i);
+        } else {
+          for (int16_t col = MATRIX_COLS-1; col >= 0; col--) {
+            cols = cols << 1;
+            cols += temp_matrix[i-MATRIX_ROWS/2][col];        
+          }
+        }
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
             if (debouncing) {
@@ -189,7 +156,7 @@ uint8_t matrix_scan(void)
         }
     }
 
-    return 1;
+  return 1;
 }
 
 bool matrix_is_modified(void)
@@ -229,142 +196,62 @@ uint8_t matrix_key_count(void)
     return count;
 }
 
-/* Column pin configuration
- *
- * Teensy
- * col: 0   1   2   3   4   5
- * pin: F0  F1  F4  F5  F6  F7 
- *
- * MCP23018
- * col: 0   1   2   3   4   5
- * pin: B5  B4  B3  B2  B1  B0 
- */
 static void  init_cols(void)
 {
-    // init on mcp23018
-    // not needed, already done as part of init_mcp23018()
+  // Input with pull-up(DDR:0, PORT:1)
+  DDRF &= ~(1<<7);
+  PORTF |= (1<<7);
+  DDRD &= ~(1<<7);
+  PORTD |= (1<<7);
 
-    // init on teensy
-    // Input with pull-up(DDR:0, PORT:1)
-    DDRF  &= ~(1<<7 | 1<<6 | 1<<5 | 1<<4 | 1<<1 | 1<<0);
-    PORTF |=  (1<<7 | 1<<6 | 1<<5 | 1<<4 | 1<<1 | 1<<0);
+  DDRB &= ~(1<<0 | 1<<1 | 1<<2 | 1<<4 | 1<<5 | 1<<6 );
+  PORTB |= (1<<0 | 1<<1 | 1<<2 | 1<<4 | 1<<5 | 1<<6 );
+   
 }
 
 static matrix_row_t read_cols(uint8_t row)
 {
-    if (row < 7) {
-        if (mcp23018_status) { // if there was an error
-            return 0;
-        } else {
-            uint8_t data = 0;
-            mcp23018_status = i2c_start(I2C_ADDR_WRITE);    if (mcp23018_status) goto out;
-            mcp23018_status = i2c_write(GPIOB);             if (mcp23018_status) goto out;
-            mcp23018_status = i2c_start(I2C_ADDR_READ);     if (mcp23018_status) goto out;
-            data = i2c_readNak();
-            data = ~data;
-        out:
-            i2c_stop();
-            return data;
-        }
-    } else {
-        _delay_us(30);  // without this wait read unstable value.
-        // read from teensy
-        return
-            (PINF&(1<<0) ? 0 : (1<<0)) |
-            (PINF&(1<<1) ? 0 : (1<<1)) |
-            (PINF&(1<<4) ? 0 : (1<<2)) |
-            (PINF&(1<<5) ? 0 : (1<<3)) |
-            (PINF&(1<<6) ? 0 : (1<<4)) |
-            (PINF&(1<<7) ? 0 : (1<<5)) ;
-    }
+   return (PINF&(1<<7) ? 0 : (1<<0))|
+	  (PINB&(1<<6) ? 0 : (1<<1))|
+	  (PINB&(1<<5) ? 0 : (1<<2))|  
+	  (PINB&(1<<4) ? 0 : (1<<3 ))|  
+	  (PIND&(1<<7) ? 0 : (1<<4 ))|  
+	  (PINB&(1<<0) ? 0 : (1<<5 ))|  
+	  (PINB&(1<<1) ? 0 : (1<<6 ))|  
+	  (PINB&(1<<2) ? 0 : (1<<7 ));
 }
 
-/* Row pin configuration
- *
- * Teensy
- * row: 7   8   9   10  11  12  13
- * pin: B0  B1  B2  B3  D2  D3  C6
- *
- * MCP23018
- * row: 0   1   2   3   4   5   6
- * pin: A0  A1  A2  A3  A4  A5  A6
- */
 static void unselect_rows(void)
 {
-    // unselect on mcp23018
-    if (mcp23018_status) { // if there was an error
-        // do nothing
-    } else {
-        // set all rows hi-Z : 1
-        mcp23018_status = i2c_start(I2C_ADDR_WRITE);    if (mcp23018_status) goto out;
-        mcp23018_status = i2c_write(GPIOA);             if (mcp23018_status) goto out;
-        mcp23018_status = i2c_write( 0xFF
-                              & ~(ergodox_left_led_3<<LEFT_LED_3_SHIFT)
-                          );                            if (mcp23018_status) goto out;
-    out:
-        i2c_stop();
-    }
-
-    // unselect on teensy
     // Hi-Z(DDR:0, PORT:0) to unselect
-    DDRB  &= ~(1<<0 | 1<<1 | 1<<2 | 1<<3);
-    PORTB &= ~(1<<0 | 1<<1 | 1<<2 | 1<<3);
-    DDRD  &= ~(1<<2 | 1<<3);
-    PORTD &= ~(1<<2 | 1<<3);
-    DDRC  &= ~(1<<6);
-    PORTC &= ~(1<<6);
+    DDRF &= ~0b01110011;
+    PORTF &= ~0b01110011;
 }
 
 static void select_row(uint8_t row)
 {
-    if (row < 7) {
-        // select on mcp23018
-        if (mcp23018_status) { // if there was an error
-            // do nothing
-        } else {
-            // set active row low  : 0
-            // set other rows hi-Z : 1
-            mcp23018_status = i2c_start(I2C_ADDR_WRITE);        if (mcp23018_status) goto out;
-            mcp23018_status = i2c_write(GPIOA);                 if (mcp23018_status) goto out;
-            mcp23018_status = i2c_write( 0xFF & ~(1<<row) 
-                                  & ~(ergodox_left_led_3<<LEFT_LED_3_SHIFT)
-                              );                                if (mcp23018_status) goto out;
-        out:
-            i2c_stop();
-        }
-    } else {
-        // select on teensy
-        // Output low(DDR:1, PORT:0) to select
-        switch (row) {
-            case 7:
-                DDRB  |= (1<<0);
-                PORTB &= ~(1<<0);
-                break;
-            case 8:
-                DDRB  |= (1<<1);
-                PORTB &= ~(1<<1);
-                break;
-            case 9:
-                DDRB  |= (1<<2);
-                PORTB &= ~(1<<2);
-                break;
-            case 10:
-                DDRB  |= (1<<3);
-                PORTB &= ~(1<<3);
-                break;
-            case 11:
-                DDRD  |= (1<<2);
-                PORTD &= ~(1<<3);
-                break;
-            case 12:
-                DDRD  |= (1<<3);
-                PORTD &= ~(1<<3);
-                break;
-            case 13:
-                DDRC  |= (1<<6);
-                PORTC &= ~(1<<6);
-                break;
-        }
+    // Output low(DDR:1, PORT:0) to select
+    switch (row) {
+        case 0:
+            DDRF  |= (1<<0);
+            PORTF &= ~(1<<0);
+            break;
+        case 1:
+            DDRF  |= (1<<1);
+            PORTF &= ~(1<<1);
+            break;
+        case 2:
+            DDRF  |= (1<<4);
+            PORTF &= ~(1<<4);
+            break;
+        case 3:
+            DDRF  |= (1<<5);
+            PORTF &= ~(1<<5);
+            break;
+        case 4:
+            DDRF  |= (1<<6);
+            PORTF &= ~(1<<6);
+            break;
     }
 }
 
